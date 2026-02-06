@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Controle de Estoque - Prefeitura</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Segoe UI, Arial;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color:white;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+    padding:20px;
+}
+
+h1{text-align:center;}
+
+.card{
+    background:rgba(255,255,255,0.08);
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:20px;
+    backdrop-filter: blur(10px);
+}
+
+.secretaria-box{
+    margin-bottom:20px;
+    border:1px solid rgba(255,255,255,0.2);
+    border-radius:10px;
+    padding:10px;
+}
+
+input, select{
+    padding:10px;
+    margin:5px;
+    border:none;
+    border-radius:6px;
+    outline:none;
+}
+
+button{
+    padding:8px 12px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.btn-add{background:#00c853;color:white;}
+.btn-baixa{background:#ffab00;}
+.btn-edit{background:#2979ff;color:white;}
+.btn-del{background:#d50000;color:white;}
+
+.search-box{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.search-box input{
+    flex:1;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+
+th, td{
+    padding:8px;
+    border-bottom:1px solid rgba(255,255,255,0.2);
+    text-align:center;
+}
+
+th{
+    background:rgba(0,0,0,0.4);
+}
+
+.requisicao{
+    background:white;
+    color:black;
+    padding:20px;
+    margin-top:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Controle de Estoque - Prefeitura de Cacaulândia</h1>
+
+<div class="card">
+<h3>Cadastrar Produto</h3>
+
+<select id="secretaria">
+<option>Saúde</option>
+<option>Educação</option>
+<option>Assistência Social</option>
+<option>Obras</option>
+<option>Cordenação geral</option>
+</select>
+
+<input id="nome" placeholder="Produto">
+<input id="quantidade" type="number" placeholder="Quantidade">
+
+<button class="btn-add" onclick="cadastrar()">Cadastrar</button>
+</div>
+
+<div class="card">
+<h3>Pesquisar</h3>
+<div class="search-box">
+<input id="pesquisa" placeholder="Pesquisar produto ou secretaria..." onkeyup="listar()">
+<span style="font-size:20px">🔍</span>
+</div>
+</div>
+
+<div id="estoque"></div>
+<div id="requisicaoArea"></div>
+
+</div>
+
+<script>
+
+function salvar(dados){
+    localStorage.setItem("estoquePrefeitura", JSON.stringify(dados));
+}
+
+function carregar(){
+    return JSON.parse(localStorage.getItem("estoquePrefeitura")) || [];
+}
+
+function cadastrar(){
+    const secretaria = document.getElementById("secretaria").value;
+    const nome = document.getElementById("nome").value;
+    const quantidade = Number(document.getElementById("quantidade").value);
+
+    if(!nome || !quantidade){
+        alert("Preencha os campos!");
+        return;
+    }
+
+    const dados = carregar();
+
+    dados.push({
+        id: Date.now(),
+        secretaria,
+        nome,
+        quantidade
+    });
+
+    salvar(dados);
+    listar();
+}
+
+function listar(){
+    const estoqueDiv = document.getElementById("estoque");
+    estoqueDiv.innerHTML = "";
+
+    const filtro = document.getElementById("pesquisa").value.toLowerCase();
+    const dados = carregar();
+
+    const secretarias = {};
+
+    dados.forEach(item=>{
+        if(
+            item.nome.toLowerCase().includes(filtro) ||
+            item.secretaria.toLowerCase().includes(filtro)
+        ){
+            if(!secretarias[item.secretaria]){
+                secretarias[item.secretaria] = [];
+            }
+            secretarias[item.secretaria].push(item);
+        }
+    });
+
+    for(let secretaria in secretarias){
+
+        let html = `
+        <div class="card secretaria-box">
+        <h3>${secretaria}</h3>
+        <table>
+        <tr>
+        <th>Produto</th>
+        <th>Quantidade</th>
+        <th>Ações</th>
+        </tr>`;
+
+        secretarias[secretaria].forEach(item=>{
+            html += `
+            <tr>
+            <td>${item.nome}</td>
+            <td>${item.quantidade}</td>
+            <td>
+                <button class="btn-baixa" onclick="baixar(${item.id})">Baixa</button>
+                <button class="btn-edit" onclick="editar(${item.id})">Editar</button>
+                <button class="btn-del" onclick="excluir(${item.id})">Excluir</button>
+            </td>
+            </tr>`;
+        });
+
+        html += "</table></div>";
+        estoqueDiv.innerHTML += html;
+    }
+}
+
+function baixar(id){
+    let qtd = prompt("Quantidade para baixar:");
+    qtd = Number(qtd);
+
+    if(!qtd) return;
+
+    const dados = carregar();
+    const item = dados.find(p=>p.id===id);
+
+    if(item){
+        item.quantidade -= qtd;
+        if(item.quantidade < 0) item.quantidade = 0;
+
+        gerarRequisicao(item.secretaria, item.nome, qtd);
+    }
+
+    salvar(dados);
+    listar();
+}
+
+function gerarRequisicao(secretaria, produto, quantidade){
+
+    const data = new Date().toLocaleString();
+    const area = document.getElementById("requisicaoArea");
+
+    area.innerHTML = `
+        <div class="requisicao">
+        <h2 style="text-align:center;">Prefeitura de Cacaulândia</h2>
+        <h3 style="text-align:center;">Requisição de Saída</h3>
+
+        <table border="1" width="100%" style="border-collapse:collapse;text-align:center;">
+        <tr>
+        <th>Secretaria</th>
+        <th>Produto</th>
+        <th>Quantidade</th>
+        <th>Data</th>
+        </tr>
+        <tr>
+        <td>${secretaria}</td>
+        <td>${produto}</td>
+        <td>${quantidade}</td>
+        <td>${data}</td>
+        </tr>
+        </table>
+
+        <br><br>
+        _______________________________<br>
+        Responsável pela retirada
+
+        <br><br>
+        <button onclick="window.print()">Imprimir</button>
+        </div>
+    `;
+}
+
+function editar(id){
+    const dados = carregar();
+    const item = dados.find(p=>p.id===id);
+
+    let novoNome = prompt("Editar nome:", item.nome);
+    let novaQtd = prompt("Editar quantidade:", item.quantidade);
+
+    if(novoNome !== null) item.nome = novoNome;
+    if(novaQtd !== null) item.quantidade = Number(novaQtd);
+
+    salvar(dados);
+    listar();
+}
+
+function excluir(id){
+    let dados = carregar();
+    dados = dados.filter(p=>p.id !== id);
+    salvar(dados);
+    listar();
+}
+
+listar();
+</script>
+
+</body>
+</html>
