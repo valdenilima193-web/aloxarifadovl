@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+    <title>Almoxarifado · Prefeitura de Cacaulândia</title>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS próprio -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- TELA DE LOGIN -->
+<div id="loginScreen" class="login-container">
+    <div class="login-card">
+        <i class="fas fa-warehouse logo-icon"></i>
+        <h1 style="color: var(--primary);">Almoxarifado</h1>
+        <p style="margin-bottom: 24px;">Prefeitura de Cacaulândia</p>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Usuário</label>
+                <div class="input-icon">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="username" placeholder="Digite seu usuário" autocomplete="off">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <div class="input-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="••••••••">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-sign-in-alt"></i> Entrar
+            </button>
+        </form>
+        <div class="info-box">
+            <p><i class="fas fa-info-circle"></i> Usuário padrão: <strong>valdeni</strong></p>
+            <p><i class="fas fa-user-plus"></i> Cadastre novos usuários após o login.</p>
+        </div>
+    </div>
+</div>
+
+<!-- SISTEMA PRINCIPAL (inicialmente oculto) -->
+<div id="mainSystem" class="main-system hidden">
+    <div class="container">
+        <!-- CABEÇALHO -->
+        <header class="app-header">
+            <div class="header-left">
+                <i class="fas fa-warehouse header-icon"></i>
+                <div class="header-title">
+                    <h1>Prefeitura de Cacaulândia</h1>
+                    <span>Sistema de Almoxarifado Centralizado</span>
+                </div>
+            </div>
+            <div class="flex" style="gap: 12px; flex-wrap: wrap;">
+                <span class="user-badge"><i class="fas fa-user"></i> <span id="loggedUser">valdeni</span></span>
+                <button id="cadastrarUsuarioBtn" class="btn btn-primary"><i class="fas fa-user-plus"></i> Cadastrar usuário</button>
+                <button id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</button>
+            </div>
+        </header>
+
+        <!-- ABAS (SECRETARIAS) -->
+        <div class="tabs" id="tabsContainer">
+            <div class="tab active" data-sec="saude"><i class="fas fa-heartbeat"></i> Saúde</div>
+            <div class="tab" data-sec="educacao"><i class="fas fa-graduation-cap"></i> Educação</div>
+            <div class="tab" data-sec="obras"><i class="fas fa-hard-hat"></i> Obras</div>
+            <div class="tab" data-sec="assistencia"><i class="fas fa-hands-helping"></i> Assistência</div>
+            <div class="tab" data-sec="agricola"><i class="fas fa-seedling"></i> Agricultura</div>
+            <div class="tab" data-sec="administracao"><i class="fas fa-building"></i> Coordenação Geral</div>
+        </div>
+
+        <!-- GRADE PRINCIPAL (2 COLUNAS) -->
+        <div class="grid-2">
+            <!-- COLUNA 1: CADASTRO, LOG, ESTATÍSTICAS -->
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-plus-circle" style="color: var(--secondary);"></i> Cadastrar Produto</h2>
+                <div class="form-group">
+                    <label>Secretaria <span style="color: var(--danger);">*</span></label>
+                    <select id="cadastroSecretaria">
+                        <option value="saude">Saúde</option>
+                        <option value="educacao">Educação</option>
+                        <option value="obras">Obras</option>
+                        <option value="assistencia">Assistência Social</option>
+                        <option value="agricola">Agricultura</option>
+                        <option value="administracao">Coordenação geral</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nome do produto</label>
+                    <input type="text" id="produtoNome" placeholder="Ex.: Máscara N95">
+                </div>
+                <div class="qtd-unidade-row">
+                    <div class="form-group">
+                        <label>Quantidade</label>
+                        <input type="number" id="produtoQtd" min="1" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Unidade</label>
+                        <select id="produtoUnidade">
+                            <option value="UND">UND</option>
+                            <option value="CX">CX</option>
+                            <option value="PCT">PCT</option>
+                            <option value="FD">FD</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="btn-cadastrar-container">
+                    <button id="btnCadastrar" class="btn btn-primary w-100">
+                        <i class="fas fa-save"></i> Cadastrar Produto
+                    </button>
+                </div>
+
+                <button id="btnVisualizarLog" class="btn w-100" style="background: #4299e1; color: white; margin-top: 24px;">
+                    <i class="fas fa-history"></i> Visualizar Log da Secretaria
+                </button>
+
+                <!-- Estatísticas -->
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalProdutos">0</div>
+                        <div class="stat-label">Produtos</div>
+                    </div>
+                    <div class="stat-item green">
+                        <div class="stat-value" id="totalItens">0</div>
+                        <div class="stat-label">Itens</div>
+                    </div>
+                    <div class="stat-item blue">
+                        <div class="stat-value" id="totalSecs">5</div>
+                        <div class="stat-label">Secretarias</div>
+                    </div>
+                </div>
+
+                <!-- Ações extras (Relatório PDF e Limpar) -->
+                <div id="acoesSecretariaContainer" class="acoes-secretaria hidden">
+                    <button id="btnRelatorio" class="btn btn-success"><i class="fas fa-file-pdf"></i> Relatório</button>
+                    <button id="btnLimparEstoque" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Limpar</button>
+                </div>
+                <p class="text-muted" style="margin-top: 24px;">
+                    <i class="fas fa-database"></i> Dados salvos no navegador
+                </p>
+            </div>
+
+            <!-- COLUNA 2: ESTOQUE, TABELA, BAIXAS -->
+            <div>
+                <div class="card">
+                    <div class="estoque-header">
+                        <h2 class="card-title" style="margin-bottom:0;"><i class="fas fa-boxes"></i> Estoque: <span id="nomeSecretariaAtual">Saúde</span></h2>
+                        <div id="dataFiltroContainer" class="data-filtro-container hidden">
+                            <label for="filtroData">Filtrar baixas:</label>
+                            <input type="date" id="filtroData">
+                        </div>
+                    </div>
+
+                    <div id="btnRelatorioBaixaContainer" style="margin-bottom: 12px; display: none;">
+                        <button id="btnRelatorioBaixa" class="btn btn-primary w-100">
+                            <i class="fas fa-file-alt"></i> Gerar Relatório de Baixa no Dia <span id="dataSelecionadaSpan"></span>
+                        </button>
+                    </div>
+
+                    <!-- Pesquisa -->
+                    <div class="search-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Pesquisar produto...">
+                    </div>
+
+                    <!-- Tabela -->
+                    <div class="table-responsive">
+                        <table id="productTable">
+                            <thead>
+                                <tr>
+                                    <th id="sortNome">Produto <i class="fas fa-sort"></i></th>
+                                    <th id="sortQtd">Quantidade <i class="fas fa-sort"></i></th>
+                                    <th>Unidade</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="emptyMessage" class="empty-message hidden">
+                        <i class="fas fa-inbox"></i>
+                        <p>Nenhum produto cadastrado.</p>
+                    </div>
+
+                    <!-- Paginação -->
+                    <div class="pagination">
+                        <button id="prevPage" disabled><i class="fas fa-chevron-left"></i> Anterior</button>
+                        <span id="pageInfo">Página 1 de 1</span>
+                        <button id="nextPage" disabled>Próximo <i class="fas fa-chevron-right"></i></button>
+                    </div>
+
+                    <!-- Painel de baixa -->
+                    <div id="baixaPanel" class="baixa-panel hidden">
+                        <h3 style="display: flex; gap: 8px; color: var(--danger);"><i class="fas fa-clipboard-list"></i> Itens aguardando baixa</h3>
+                        <div id="baixaListaContainer"></div>
+                        <button id="btnGerarRequisicao" class="btn btn-warning w-100">
+                            <i class="fas fa-file-invoice"></i> Gerar requisição e finalizar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ÚNICO -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle" style="display: flex; gap: 8px; color: var(--primary);"><i class="fas fa-edit"></i> Título</h3>
+            <button id="closeModalBtn" class="close-modal">&times;</button>
+        </div>
+        <div id="modalBody" style="padding-top: 20px;"></div>
+    </div>
+</div>
+
+<!-- NOTIFICAÇÃO FLUTUANTE -->
+<div id="notification" class="notification">
+    <i class="fas fa-check-circle"></i>
+    <span id="notificationText">Sucesso</span>
+</div>
+
+<!-- Script principal (carregar ao final) -->
+<script type="module" src="script.js"></script>
+</body>
+</html>
